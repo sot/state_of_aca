@@ -7,6 +7,7 @@ go once per year.
 """
 
 import dark_models
+import matplotlib.pyplot as plt
 from Chandra.Time import DateTime
 import matplotlib.ticker as ticker
 import os
@@ -14,10 +15,11 @@ import re
 import ParseTable
 import numpy as np
 
+
 def plot_overlays():
     """Plot 1999223 actual, degradation model, 2008273 actual and 2008273 predicted"""
-    figure(1, figsize=(7,5))
-    clf()
+    plt.figure(1, figsize=(7,5))
+    plt.clf()
     plot_darkcal('aca_dark_cal/1999223/imd.fits', -10, '-g', label='1999 SSD closed', step=True)
     plot_darkcal('aca_dark_cal/2008273/imd.fits', -19, '-b', label='2008 actual', step=True)
     plot_darkcal('worst/from1999223/2008273.fits', -19, '.b', label='2008 predicted')
@@ -25,16 +27,17 @@ def plot_overlays():
 
     pars = dark_models.nompars(dyear=1.0)
     darkmodel = dark_models.smooth_twice_broken_pow(pars, dark_models.xall)
-    plot(dark_models.xall, darkmodel, label='Degradation model')
+    plt.plot(dark_models.xall, darkmodel, label='Degradation model')
 
-    xlim(1, 1e4)
-    ylim(0.5, 3e5)
-    xlabel('Dark current (e-/sec)')
-    ylabel('Number per bin')
-    title('Dark current distributions')
-    legend(loc=3)
-    savefig('dark_overlays.png')
-    
+    plt.xlim(1, 1e4)
+    plt.ylim(0.5, 3e5)
+    plt.xlabel('Dark current (e-/sec)')
+    plt.ylabel('Number per bin')
+    plt.title('Dark current distributions')
+    plt.legend(loc=3)
+    plt.savefig('dark_overlays.png')
+
+
 def plot_darkcal(darkfile, Tccd, plotsymcol='-', label=None, step=None):
     """
     Plot a real dark cal, scaled from temp C{Tccd} to -19
@@ -55,6 +58,7 @@ def plot_darkcal(darkfile, Tccd, plotsymcol='-', label=None, step=None):
     x, y = plot_dark(dark, label, plotsymcol, step=step)
     return dark, x, y
 
+
 def plot_dark(dark, label=None, plotsymcol='.', step=False):
     """Plot dark cal data as a histogram.  'dark' is a flat array."""
     dark = dark + np.random.uniform(-0.5, 0.5, len(dark))
@@ -67,6 +71,7 @@ def plot_dark(dark, label=None, plotsymcol='.', step=False):
     y[y < 1e-5] = 0.1
     loglog(x, y, plotsymcol, label=label)
     return x, y
+
 
 def make_steps(x, y):
     """For x as bin edges (n+1 vals) and y as bin vals (n vals), make the corresponding
@@ -101,6 +106,7 @@ secs2k = DateTime('2000:001:00:00:00').secs
 sec2year = 1 / (86400. * 365.25)
 yeardays = 365.25
 alldarkcals = ParseTable.parse_table('darkcal_stats.dat')
+
 
 def make_darkmaps(case='nominal', initial='pristine'):
     """Make dark current maps by degrading the CCD using the best-fit model

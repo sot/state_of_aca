@@ -13,16 +13,17 @@ from darkbins import x0, x1, dx, bins as xbins
 # Fixed gaussian for smoothing the broken power law
 dx = 0.1
 sigma = 0.25                            # Gaussian sigma in log space
-xg = arange(-2.5*sigma, 2.5*sigma, dx, dtype=float)
-yg = exp(-0.5 * (xg/sigma)**2)
+xg = arange(-2.5 * sigma, 2.5 * sigma, dx, dtype=float)
+yg = exp(-0.5 * (xg / sigma) ** 2)
 yg /= np.sum(yg)
 
-NPIX = 1024**2
+NPIX = 1024 ** 2
 
 # Fixed
 xall = (xbins[:-1] + xbins[1:]) / 2.0
 imin = 0
 imax = len(xall)
+
 
 def broken_pow(pars, x):
     """Broken power-law.  Pars are same as bpl1d:
@@ -32,11 +33,12 @@ def broken_pow(pars, x):
     4: x_r (normalization reference point)
     5: ampl1"""
     (gamma1, gamma2, x_b, x_r, ampl1) = pars
-    ampl2 = ampl1 * (x_b / x_r)**(gamma2 - gamma1)
+    ampl2 = ampl1 * (x_b / x_r) ** (gamma2 - gamma1)
     ok = x > x_b
-    y = ampl1 * (x / x_r)**(-gamma1)
-    y[ok] = ampl2 * (x[ok] / x_r)**(-gamma2)
+    y = ampl1 * (x / x_r) ** (-gamma1)
+    y[ok] = ampl2 * (x[ok] / x_r) ** (-gamma2)
     return y
+
 
 def smooth_broken_pow(pars, x):
     """Smoothed broken power-law.  Pars are same as bpl1d (NOT + gaussian sigma):
@@ -47,11 +49,12 @@ def smooth_broken_pow(pars, x):
     5: ampl1
     #   NOT 6: sigma (bins)"""
     (gamma1, gamma2, x_b, x_r, ampl1) = pars
-    ampl2 = ampl1 * (x_b / x_r)**(gamma2 - gamma1)
+    ampl2 = ampl1 * (x_b / x_r) ** (gamma2 - gamma1)
     ok = xall > x_b
-    y = ampl1 * (xall / x_r)**(-gamma1)
-    y[ok] = ampl2 * (xall[ok] / x_r)**(-gamma2)
+    y = ampl1 * (xall / x_r) ** (-gamma1)
+    y[ok] = ampl2 * (xall[ok] / x_r) ** (-gamma2)
     return np.convolve(y, yg, mode='same')[imin:imax]
+
 
 def smooth_twice_broken_pow(pars, x):
     """Smoothed broken power-law.  Pars are same as bpl1d (NOT + gaussian sigma):
@@ -65,15 +68,15 @@ def smooth_twice_broken_pow(pars, x):
     x_b0 = 5
 
     (gamma1, gamma2, x_b, x_r, ampl1) = pars
-    y = ampl1 * (x / x_r)**(-gamma1)
+    y = ampl1 * (x / x_r) ** (-gamma1)
 
     ok = x > x_b
-    ampl2 = ampl1 * (x_b / x_r)**(gamma2 - gamma1)
-    y[ok] = ampl2 * (x[ok] / x_r)**(-gamma2)
+    ampl2 = ampl1 * (x_b / x_r) ** (gamma2 - gamma1)
+    y[ok] = ampl2 * (x[ok] / x_r) ** (-gamma2)
 
     ok = x < x_b0
-    ampl0 = ampl1 * (x_b0 / x_r)**(gamma0 - gamma1)
-    y[ok] = ampl0 * (x[ok] / x_r)**(-gamma0)
+    ampl0 = ampl1 * (x_b0 / x_r) ** (gamma0 - gamma1)
+    y[ok] = ampl0 * (x[ok] / x_r) ** (-gamma0)
 
     return np.convolve(y, yg, mode='same')
 
@@ -118,6 +121,6 @@ def degrade_ccd(dark, dyear):
 def temp_scalefac(T_ccd):
     """Return the multiplicative scale factor to convert a CCD dark map from
     the nominal -19C temperature to the temperature T.  Based on an overall reduction
-    of 0.62 after changing from -15 to -19.  
+    of 0.62 after changing from -15 to -19.
     """
     return exp(log(0.62) / 4.0 * (-19.0 - T_ccd))
