@@ -18,6 +18,18 @@ def extract(par, fits):
     return np.rec.fromrecords(records, names=('year', 'val', 'lo', 'hi'))
 
 
+def extract1(par, fits):
+    ('parnames', 'parvals', 'parmins', 'parmaxes')
+    par = 'sbp.' + par
+    records = []
+    yeardoy = re.search(r'(\d{7})', key).group(1)
+    year = float(yeardoy[0:4]) + float(yeardoy[4:7]) / 365.
+    fit = fits[key]
+    ipar = list(fit['parnames']).index(par)
+    records.append((year, fit['parvals'][ipar], fit['parmins'][ipar], fit['parmaxes'][ipar]))
+    return np.rec.fromrecords(records, names=('year', 'val', 'lo', 'hi'))
+
+
 def make_plots(g1, g2, amp, xb, rootdir=None):
     if g1 is not None:
         plt.figure(1, figsize=(5.5, 4))
@@ -26,6 +38,7 @@ def make_plots(g1, g2, amp, xb, rootdir=None):
         plt.title('Cool/warm powerlaw index')
         plt.xlabel('Year')
         plt.ylabel('Gamma 1')
+        plt.grid(True)
         if rootdir:
             plt.savefig('{}/gamma1.png'.format(rootdir))
 
@@ -36,6 +49,7 @@ def make_plots(g1, g2, amp, xb, rootdir=None):
         plt.title('Warm/hot powerlaw index')
         plt.xlabel('Year')
         plt.ylabel('Gamma 2')
+        plt.grid(True)
         if rootdir:
             plt.savefig('{}/gamma2.png'.format(rootdir))
 
@@ -46,6 +60,7 @@ def make_plots(g1, g2, amp, xb, rootdir=None):
         plt.title('Powerlaw normalization')
         plt.xlabel('Year')
         plt.ylabel('Amplitude 1')
+        plt.grid(True)
         if rootdir:
             plt.savefig('{}/ampl1.png'.format(rootdir))
 
@@ -56,6 +71,7 @@ def make_plots(g1, g2, amp, xb, rootdir=None):
         plt.title('Broken powerlaw break point')
         plt.xlabel('Year')
         plt.ylabel('Break point (e-/sec)')
+        plt.grid(True)
         if rootdir:
             plt.savefig('{}/break.png'.format(rootdir))
 
@@ -79,7 +95,7 @@ def extrap_amp():
     savefig('ampl_extrap.png')
 
 
-def get_par_fits(filename='fits.pickle'):
+def get_par_fits(filename='darkhist_zodib/fits.pkl'):
     fits = pickle.load(open(filename))
     try:
         g1 = extract('gamma1', fits)
