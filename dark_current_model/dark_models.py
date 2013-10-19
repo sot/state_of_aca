@@ -8,7 +8,7 @@ import Ska.Numpy
 from Chandra.Time import DateTime
 
 # Define a common fixed binning of dark current distribution
-from darkbins import bins as xbins
+import darkbins
 
 # Some constants and globals.  Done this way to support sherpa fitting.
 # Needs to be re-worked to be nicer.
@@ -23,7 +23,8 @@ yg /= np.sum(yg)
 NPIX = 1024 ** 2
 
 # Fixed
-xall = (xbins[:-1] + xbins[1:]) / 2.0
+xbins = darkbins.bins
+xall = darkbins.bin_centers
 imin = 0
 imax = len(xall)
 
@@ -148,7 +149,7 @@ def temp_scalefac(T_ccd):
     return exp(log(0.62) / 4.0 * (-19.0 - T_ccd))
 
 
-def sbp_pars(dates):
+def get_sbp_pars(dates):
     """
     Return smooth broken powerlaw parameters at ``date``.  This is based on the
     sbp fits for the darkhist_peaknorm histograms, with parameters derived from
@@ -183,4 +184,13 @@ def sbp_pars(dates):
         bp = bp[0]
         x_r = x_r[0]
 
-    return g1, g2, ampl, bp, x_r
+    return g1, g2, bp, x_r, ampl
+
+
+def get_darkhist(date='2013:001', T_ccd=-19.0):
+    """
+    Get dark current histogram at the given ``date`` and ``T_ccd``.
+
+    Returns bins, darkhist
+    """
+    pars = get_sbp_pars(date)
