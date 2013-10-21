@@ -1,12 +1,12 @@
---------------------------------------------------------------------
+*********************************************************
 ** Get dark current histograms
---------------------------------------------------------------------
+*********************************************************
 run -i make_darkhist.py
-make_darkhist(dateglob='20?????', plot=True, outroot=None, peak_norm=8.0, zodi_norm=False)
+make_darkhist(dateglob='20?????', plot=True, outroot='darkhist_peaknorm', peak_norm=8.0, zodi_norm=False)
 
---------------------------------------------------------------------
+*********************************************************
 ** Fit for evolution
---------------------------------------------------------------------
+*********************************************************
 run -i fit_evol.py
 results = fit_evol(dateglob='20?????', rootdir='darkhist_peaknorm', outroot='', xmin=25.0, xmax=4000)
 
@@ -14,9 +14,9 @@ results = fit_evol(dateglob='20?????', rootdir='darkhist_peaknorm', outroot='', 
 % convert -delay 10 *.png  -loop 0 dark_peaknorm_anim.gif
 % animate dark_peaknorm_anim.gif
 
---------------------------------------------------------------------
+*********************************************************
 ** Getting the extrapolated values
---------------------------------------------------------------------
+*********************************************************
 run -i plot_fits.py
 g1, g2, amp, xb = get_par_fits('darkhist_peaknorm/fits.pkl')
 make_plots(g1, g2, amp, xb)
@@ -61,18 +61,45 @@ Fixed at 0.05
 ***** Gamma1 ******
 Fixed at 3.15 (approximate average value)
 
---------------------------------------------------------------------
+*********************************************************
 ** Canonical values
---------------------------------------------------------------------
+*********************************************************
     sbp.gamma1 = 0.05
     sbp.gamma2 = 3.15
     sbp.x_b = 125.
     sbp.x_r = 50.
 
---------------------------------------------------------------------
+*********************************************************
+** Play with scaling factor
+*********************************************************
+
+The multiplicative scale factor to convert a CCD dark map from
+the nominal -19C temperature to the temperature T is defined in
+dark_models.temp_scalefac().  Based on best global fit for
+dark current model in plot_predicted_warmpix.py the coefficient
+was set to 0.70.  This is a little different from the observed
+change in N100 of 0.62 when going from -15 to -19.
+
+The fitting results in darkhist_peaknorm form the basis
+of the nominal dark model in get_sbp_pars().  These were scaled
+using   For kicks I
+remade the dark histograms using::
+
+  t_ccd_ref = -19.0
+  scale = 10 ** ((t_ccd_ref - cal['temp']) / 21.0)
+
+  exp(log(0.70) / 4.0 * (-19.0 - T_ccd))
+   OR (modulo a minus sign)
+  scale = 10 ** ((t_ccd_ref - cal['temp']) / 25.8)
+
+This changed the fits and made the excursions in
+break point much smaller, but in the end didn't make the predictive
+model more well-behaved.
+
+*********************************************************
 ** Make simulated CCD dark current maps for mission and to year 20 MET
 ** Plot warm fraction for nominal and worst cases
---------------------------------------------------------------------
+*********************************************************
 pylab
 clf()
 execfile('make_darkmaps.py')
