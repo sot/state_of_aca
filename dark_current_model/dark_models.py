@@ -143,10 +143,22 @@ def degrade_ccd(dark, dyear):
 
 def temp_scalefac(T_ccd):
     """Return the multiplicative scale factor to convert a CCD dark map from
-    the nominal -19C temperature to the temperature T.  Based on an overall reduction
-    of 0.62 after changing from -15 to -19.
+    the nominal -19C temperature to the temperature T.  Based on best global fit for
+    dark current model in plot_predicted_warmpix.py.  Previous value was 0.62 instead
+    of 0.70.
     """
-    return exp(log(0.62) / 4.0 * (-19.0 - T_ccd))
+    return exp(log(0.70) / 4.0 * (-19.0 - T_ccd))
+
+
+def as_array(vals):
+    if np.array(vals).ndim == 0:
+        is_scalar = True
+        vals = np.array([vals])
+    else:
+        is_scalar = False
+
+    vals = np.array(vals)
+    return vals, is_scalar
 
 
 def get_sbp_pars(dates):
@@ -155,13 +167,7 @@ def get_sbp_pars(dates):
     sbp fits for the darkhist_peaknorm histograms, with parameters derived from
     by-hand inspection of fit trending.  See NOTES.
     """
-    if np.array(dates).ndim == 0:
-        is_scalar = True
-        dates = np.array([dates])
-    else:
-        is_scalar = False
-
-    dates = np.array(dates)
+    dates, is_scalar = as_array(dates)
     n_dates = len(dates)
 
     years = DateTime(dates).frac_year
@@ -194,3 +200,39 @@ def get_darkhist(date='2013:001', T_ccd=-19.0):
     Returns bins, darkhist
     """
     pars = get_sbp_pars(date)
+    x = darkbins.bin_centers
+    y = smooth_broken_pow(pars, x)
+
+    scale = temp_scalefac(T_ccd)
+    xbins = darkbins.bins * scale
+    x = x * scale
+
+    return x, xbins, y
+
+
+def get_warm_fracs(warm_thresholds, date='2013:001', T_ccd=-19.0):
+    x, xbins, y = get_darkhist(date, T_ccd)
+    warm_thresholds, is_scalar = as_array(warm_thresholds)
+
+    warmpixes = []
+    for warm_threshold in warm_thresholds:
+        # First get the full bins to right of warm_threshold
+        ii = np.searchsorted(xbins, warm_threshold)
+        warmpix = np.sum(y[ii:])
+        lx = np.log(warm_threshold)
+        lx0 = np.log(xbins[ii - 1])
+        lx1 = np.log(xbins[ii])
+        ly0 = np.log(y[ii - 1])
+        ly1 = np.log(y[ii])
+        m = (ly1 - ly0) / (lx1 - lx0)
+        partial_bin = y[ii] * (lx1 ** m - lx ** m) / (lx1 ** m - lx0 ** m)
+        # print ii, x[ii], xbins[ii - 1], xbins[ii], y[ii], partial_bin
+        warmpix += partial_bin
+        warmpixes.append(warmpix)
+
+    if is_scalar:
+        out = warmpixes[0]
+    else:
+        out = np.array(warmpixes)
+
+    return out / (1024.0 ** 2)
