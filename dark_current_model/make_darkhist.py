@@ -8,6 +8,7 @@ from astropy.io import fits
 from astropy.io import ascii
 
 import darkbins
+import dark_models
 
 cals = ascii.read('../warm_pix_from_dc/dark_cals_with_temp.txt')
 cals_map = {re.sub(r':', '', cal['day']): cal for cal in cals}
@@ -50,7 +51,7 @@ def make_darkhist(dateglob='20?????', plot=True, outroot=None, peak_norm=8.0, zo
         # For t_ccds warmer than t_ccd_ref this scale factor is < 1, i.e. the
         # observed dark current is made smaller to match what it would be at the
         # lower reference temperature.
-        scale = 10 ** ((t_ccd_ref - cal['temp']) / 21.0)
+        scale = 1.0 / dark_models.temp_scalefac(cal['temp'])
         dark *= scale
 
         if peak_norm is not None:
