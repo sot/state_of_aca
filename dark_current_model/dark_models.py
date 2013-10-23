@@ -236,3 +236,20 @@ def get_warm_fracs(warm_thresholds, date='2013:001', T_ccd=-19.0):
         out = np.array(warmpixes)
 
     return out / (1024.0 ** 2)
+
+
+def ccd_temperature_model(t_ccd_max, start='2014:001', stop='2018:001', n=20):
+    """
+    Canonical model of future CCD temperature which is increasing linearly
+    from current observed maxes until it gets clipped at ``t_ccd_max``.
+    """
+    start = DateTime(start)
+    stop = DateTime(stop)
+    x0 = 2014.0
+    y0 = -15.0
+    x1 = 2016.0
+    y1 = -11.0
+    x = np.linspace(start.frac_year, stop.frac_year, n)
+    y = (x - x0) / (x1 - x0) * (y1 - y0) + y0
+    y = y.clip(None, t_ccd_max)
+    return x, y
