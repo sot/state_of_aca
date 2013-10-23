@@ -252,4 +252,5 @@ def ccd_temperature_model(t_ccd_max, start='2014:001', stop='2018:001', n=20):
     x = np.linspace(start.frac_year, stop.frac_year, n)
     y = (x - x0) / (x1 - x0) * (y1 - y0) + y0
     y = y.clip(None, t_ccd_max)
-    return x, y
+
+    return DateTime(x, format='frac_year'), y

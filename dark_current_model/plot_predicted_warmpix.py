@@ -10,6 +10,7 @@ it's not a big issue here.
 from glob import glob
 import os
 import re
+from itertools import izip
 
 import numpy as np
 
@@ -89,3 +90,38 @@ def plot_warm_frac():
     plt.ylabel('Warm pixel fraction')
     plt.tight_layout()
     plt.savefig('warm_frac_model.png')
+
+
+def plot_warm_frac_future():
+    """
+    Plot the future warm pixel fraction from the 2013 baseline dark current model
+    for the N100 case.  Include observed fractions from dark current calibrations.
+    """
+    warm_threshold = 100.
+    dates, pred_warm_fracs, obs_warm_fracs = get_warm_frac(warm_thresholds=[warm_threshold])
+
+    plt.close(1)
+    plt.figure(1, figsize=(6, 4))
+    color = 'g'
+    plot_cxctime(dates, obs_warm_fracs[warm_threshold], color + '.')
+    plot_cxctime(dates, pred_warm_fracs[warm_threshold], color + '-')
+
+    for t_ccd_max, offset, color in izip((-14, -11, -7), (0, 0.005, 0.01), ('r', 'g', 'b')):
+        dates, t_ccds = dark_models.ccd_temperature_model(t_ccd_max, start='2014:001',
+                                                          stop='2018:001', n=20)
+        warm_fracs = []
+        for time, t_ccd in izip(dates.secs, t_ccds):
+            warm_frac = dark_models.get_warm_fracs(warm_threshold, date=time, T_ccd=t_ccd)
+            warm_fracs.append(warm_frac + offset)
+        plot_cxctime(dates.secs, warm_fracs, color + '-',
+                     label='T_ccd < {} C'.format(t_ccd_max))
+
+    x0, x1 = plt.xlim()
+    dx = (x1 - x0) * 0.03
+    plt.xlim(x0 - dx, x1 + dx)
+    plt.grid()
+    # plt.legend(loc='best', fontsize=12)
+    plt.title('Warm pixel fraction: model (line), observed (dots) vs. time', fontsize=12)
+    plt.ylabel('N > 100 warm pixel fraction')
+    plt.tight_layout()
+    plt.savefig('warm_frac_future.png')
