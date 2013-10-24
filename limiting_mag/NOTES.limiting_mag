@@ -1,0 +1,16 @@
+###############################################################
+## Compute limiting magnitude
+###############################################################
+
+Define limiting magnitude to be the magnitude at which the no_trak fraction crosses 50%.
+In other words, half of stars will be tracked less than 95% of the time (or conversely
+half of stars are not tracked 5% of the time).
+
+This requires combining two things:
+  0.5 = no_trak = scale * N100
+  scale = 10**(1.18 * (mag - 10.09))
+
+  10**(1.18 * (mag - 10.09)) = 0.5 / N100
+  1.18 * (mag - 10.09) = log10(0.5 / N100)
+  mag = log10(0.5 / N100) / 1.18 + 10.09
+
