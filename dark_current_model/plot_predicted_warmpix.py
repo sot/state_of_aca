@@ -114,14 +114,14 @@ def plot_warm_frac_future():
             warm_frac = dark_models.get_warm_fracs(warm_threshold, date=time, T_ccd=t_ccd)
             warm_fracs.append(warm_frac + offset)
         plot_cxctime(dates.secs, warm_fracs, color + '-',
-                     label='T_ccd < {} C'.format(t_ccd_max))
+                     label='T_ccd < {} C'.format(t_ccd_max), linewidth=1.5)
 
     x0, x1 = plt.xlim()
     dx = (x1 - x0) * 0.03
     plt.xlim(x0 - dx, x1 + dx)
     plt.grid()
-    # plt.legend(loc='best', fontsize=12)
-    plt.title('Warm pixel fraction: model (line), observed (dots) vs. time', fontsize=12)
+    plt.legend(loc='best', fontsize=12)
+    plt.title('Warm pixel fraction vs. time')
     plt.ylabel('N > 100 warm pixel fraction')
     plt.tight_layout()
     plt.savefig('warm_frac_future.png')
