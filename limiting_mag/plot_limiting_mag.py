@@ -1,10 +1,11 @@
 """
-Plot the warm pixel fraction from the 2013 baseline dark current model vs. observed
-fractions from dark current calibrations.
+Plot the guide star limiting magnitude vs time.  This defines limiting magnitude as
+the brightness for which the ensemble no_trak fraction is 50%.  No_trak fraction is
+defined as the fraction of guide stars that are not tracked for over 5% of the
+observation.
 
-Note that the N=1000 prediction doesn't match observation that well (off by a scale
-factor).  This is indicative that the pure powerlaw doesn't hold out that far, but
-it's not a big issue here.
+TO DO: this should be renamed plot_guide_mag_limit (along with the function) for
+consistency with plot_acq_mag_limit.
 """
 
 import sys
