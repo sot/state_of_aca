@@ -50,7 +50,7 @@ def prob_n_stars(p):
                     print "!{} ".format(slot),
             # the chance of n stars is the OR probability of the individual
             # combinations
-            n_prob = n_prob + comb_prob - (n_prob * comb_prob)
+            n_prob = n_prob + comb_prob
             print comb_prob
         acq_prob.append(n_prob)
     for n in range(len(p) + 1):
