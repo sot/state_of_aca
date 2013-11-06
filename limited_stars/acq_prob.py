@@ -43,50 +43,20 @@ def prob_n_stars(p):
                 if slot in comb:
                     # if the slot in the success set, use the probability
                     comb_prob = comb_prob * p[slot]
-                    print " {} ".format(slot),
+                    #print " {} ".format(slot),
                 else:
                     # if the slot wasn't in the success set, use the fail prob
                     comb_prob = comb_prob * (1 - p[slot])
-                    print "!{} ".format(slot),
+                    #print "!{} ".format(slot),
             # the chance of n stars is the OR probability of the individual
             # combinations
             n_prob = n_prob + comb_prob
-            print comb_prob
+            #print comb_prob
         acq_prob.append(n_prob)
-    for n in range(len(p) + 1):
-        print "Prob of {} is {}".format(n, acq_prob[n])
+    #for n in range(len(p) + 1):
+    #    print "Prob of {} is {}".format(n, acq_prob[n])
     return acq_prob
 
-def cum_stars(p):
-    """probability of n or fewer"""
-    acq_prob = []
-    for n_star in range(0, len(p) + 1):
-        from itertools import combinations
-        n_prob = 0
-        for n_down in range(0, n_star + 1):
-            n_down_prob = 0
-            print n_star, n_down
-            for comb in combinations(range(len(p)), n_down):
-                # find every combination of n_star success
-                comb_prob = 1.0
-                for slot in range(0, len(p)):
-                    if slot in comb:
-                        # if the slot in the success set, use the probability
-                        comb_prob = comb_prob * p[slot]
-                        print " {} ".format(slot),
-                    else:
-                        # if the slot wasn't in the success set, use the fail prob
-                        comb_prob = comb_prob * (1 - p[slot])
-                        print "!{} ".format(slot),
-                # the chance of n stars is the OR probability of the individual
-                # combinations
-                n_down_prob = n_down_prob + comb_prob - (n_down_prob * comb_prob)
-                print comb_prob
-            n_prob = n_prob + n_down_prob
-        acq_prob.append(n_prob)
-    for n in range(len(p) + 1):
-        print "Prob of {} or less is {}".format(n, acq_prob[n])
-    return acq_prob
 
 
 def obsid_probabilities():
@@ -140,10 +110,10 @@ def obsid_probabilities():
                 continue
             acq_probs = [1 - acq_fail_prob(star['mag'], warm_frac) for star in acq]
             prob_n = prob_n_stars(acq_probs)
-            per_obsid_two[t_ccd_max].append(prob_n[2])
-            per_obsid_three[t_ccd_max].append(prob_n[3])
-            per_obsid_four[t_ccd_max].append(prob_n[4])
-            raise ValueError
+            cum = np.cumsum(prob_n)
+            per_obsid_two[t_ccd_max].append(cum[2])
+            per_obsid_three[t_ccd_max].append(cum[3])
+            per_obsid_four[t_ccd_max].append(cum[4])
         np.save('acq_two_{}'.format(t_ccd_max), per_obsid_two[t_ccd_max])
         np.save('acq_three_{}'.format(t_ccd_max), per_obsid_three[t_ccd_max])
         np.save('acq_four_{}'.format(t_ccd_max), per_obsid_three[t_ccd_max])
