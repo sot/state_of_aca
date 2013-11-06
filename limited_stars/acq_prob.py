@@ -48,42 +48,9 @@ def prob_n_stars(p):
         acq_prob[n_star] = n_prob
     return acq_prob
 
-#    raise ValueError
-#
-#    for i in range(0, 2**len(p)):
-#        print i
-#        total_prob = 1.0
-#        n_acq = 0
-#        prob = 0
-#        for slot in range(0, len(p)):
-#            if ((i & 2**slot) > 1):
-#                prob = p[slot]
-#                n_acq = n_acq + 1
-#                print "slot {} hit {:.4f}".format(slot, prob),
-#            else:
-#                print "slot {} fail {:.4f}".format(slot, prob),
-#                prob = 1 - p[slot]
-#            total_prob = total_prob * prob
-#        print "\n"
-#        acq_prob[n_acq] = acq_prob[n_acq] + total_prob
-#    raise ValueError
-#    return acq_prob
-
 def cum_prob(acq_prob):
     """probability of n or fewer stars"""
     return [1 - acq_prob[i + 1] for i in range(1, 7)]
-
-
-#def cum_prob(acq_prob):
-#    cum_prob = [0 for s in acq_prob]
-#    exp = 0
-#    for i in range(1, len(acq_prob)+1):
-#        exp = exp + i * acq_prob[i]
-#        for j in range(i, len(acq_prob) + 1):
-#            cum_prob[i] = cum_prob[i] + acq_prob[j]
-#    cum_prob_l = [log(1.0 - s)/log(10.0) for s in cum_prob]
-#    raise ValueError
-#    return cum_prob_l
 
 
 per_obsid_four = { -7: [],
