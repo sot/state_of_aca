@@ -1,3 +1,20 @@
+"""
+Plots and image maps related to the fraction of sky available for different
+assumptions about limiting magnitude and definitions of "good" guide and acq
+catalogs.
+
+>>> run -i make_mag_limit_maps
+>>> make_ra_dec_stars_list()  # historical detour down a wrong road
+>>> make_ras_decs_stars_list()  # uses output from previous
+>>> !rm ra_dec_stars_list.pkl
+
+>>> plot_frac_good_guide_catalogs()
+>>> plot_frac_good_acq_catalogs()
+
+>>> make_n_stars_images()
+>>> make_good_guide_catalogs_images()
+"""
+
 from __future__ import division
 
 import cPickle as pickle
@@ -66,40 +83,59 @@ def calc_good_catalogs(mag_limit=10.6, min_06=2, min_03=3, min_00=4):
     return np.sum(good_catalogs) / len(good_catalogs), good_catalogs
 
 
-def plot_frac_good_acq_catalogs(min_06=2, min_03=3, min_00=5, frac_goods=None):
+def plot_frac_good_catalogs(min_06s=[1, 1], min_03s=[2, 3], min_00s=[4, 5],
+                            frac_goods=None, mag_cases=(10.13, 10.02, 9.93)):
     """
-    Calculate the fraction of sky that has "good" acquisition catalogs for a given mag limit.
+    Plot the fraction of sky that has "good" catalogs for a given mag limit.
     """
     mag_limits = np.arange(9.5, 10.65, 0.1)
     if frac_goods is None:
-        frac_goods = []
-        for mag_limit in mag_limits:
-            print 'Computing for {}'.format(mag_limit)
-            frac_good, good_catalogs = calc_good_catalogs(mag_limit, min_06, min_03, min_00)
-            frac_goods.append(frac_good)
+        frac_goods = {}
+        for min_06, min_03, min_00 in zip(min_06s, min_03s, min_00s):
+            key = (min_06, min_03, min_00)
+            print 'Key =', key
+            frac_goods[key] = []
+            for mag_limit in mag_limits:
+                print 'Computing for {}'.format(mag_limit)
+                frac_good, good_catalogs = calc_good_catalogs(mag_limit, min_06, min_03, min_00)
+                frac_goods[key].append(frac_good)
 
     plt.close(11)
     plt.figure(11, figsize=(6, 4))
-    plt.plot(mag_limits, frac_goods, '-', lw=2)
+    for key in sorted(frac_goods.keys()):
+        plt.plot(mag_limits, frac_goods[key], lw=2)
     plt.grid()
-    plt.title('Fraction of sky with good acq catalogs')
     plt.xlabel('Limiting magnitude')
     plt.ylabel('Sky fraction')
     # Plot lines corresponding to 2018 limits for -14C, -11C, and -7C
     y0, y1 = plt.ylim()
-    plt.plot([10.13, 10.13], [y0, y1], '--r', label='-14 C', lw=2, alpha=0.5)
-    plt.plot([10.02, 10.02], [y0, y1], '--g', label='-11 C', lw=2, alpha=0.5)
-    plt.plot([9.93, 9.93], [y0, y1], '--b', label='-7 C', lw=2, alpha=0.5)
+    mc = mag_cases
+    plt.plot([mc[0], mc[0]], [y0, y1], '--r', label='-14 C', lw=2, alpha=0.5)
+    plt.plot([mc[1], mc[1]], [y0, y1], '--g', label='-11 C', lw=2, alpha=0.5)
+    plt.plot([mc[2], mc[2]], [y0, y1], '--b', label='-7 C', lw=2, alpha=0.5)
     plt.ylim(y0, y1)
     plt.legend(loc='best', fontsize=12)
-
-    plt.tight_layout()
-    plt.savefig('frac_sky_good_acq_{}{}{}.png'.format(min_06, min_03, min_00))
 
     return frac_goods
 
 
-def plot_series_good_guide_catalogs():
+def plot_frac_good_acq_catalogs(min_06s=[2, 2], min_03s=[3, 3], min_00s=[4, 5],
+                                mag_cases=(10.13, 10.02, 9.93)):
+    plot_frac_good_catalogs(min_06s, min_03s, min_00s, mag_cases=mag_cases)
+    plt.title('Fraction of sky with good acq catalogs')
+    plt.tight_layout()
+    plt.savefig('frac_sky_good_acq.png')
+
+
+def plot_frac_good_guide_catalogs(min_06s=[1, 1], min_03s=[2, 3], min_00s=[4, 5],
+                                  mag_cases=(10.38, 10.29, 10.20)):
+    plot_frac_good_catalogs(min_06s, min_03s, min_00s, mag_cases=mag_cases)
+    plt.title('Fraction of sky with good guide catalogs')
+    plt.tight_layout()
+    plt.savefig('frac_sky_good_guide.png')
+
+
+def make_good_guide_catalogs_images():
     """
     Make a series of images suitable for animation:
     % convert -delay 100 good_guide_catalogs_*.png  -loop 0 good_guide_catalogs_anim.gif
@@ -114,7 +150,7 @@ def plot_series_good_guide_catalogs():
         plt.savefig(outfile)
 
 
-def plot_n_stars(mag_limit=10.6):
+def make_n_stars_image(mag_limit=10.6):
     """
     Plot the number of stars brighter than ``mag_limit`` within ``radius`` degrees.
     Makes a mollweide visualization using healpy.
@@ -127,14 +163,14 @@ def plot_n_stars(mag_limit=10.6):
     healpy.mollview(n_map, cmap=cm.jet_r, fig=10, min=0, max=8)
 
 
-def plot_series_n_stars():
+def make_n_stars_images():
     """
     Make a series of images suitable for animation:
     % convert -delay 50 n_stars_*.png  -loop 0 n_stars_anim.gif
     """
     for ii, mag_limit in enumerate(np.arange(10.6, 9.5, -0.1)):
         outfile = 'n_stars_{:02d}_{:.1f}.png'.format(ii, mag_limit)
-        plot_n_stars(mag_limit)
+        make_n_stars_image(mag_limit)
         plt.title('Magnitude limit {:.1f} mag'.format(mag_limit))
         plt.savefig(outfile)
 
