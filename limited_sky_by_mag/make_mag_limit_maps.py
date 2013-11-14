@@ -50,23 +50,53 @@ def make_ras_decs_stars_list():
     pickle.dump([ras, decs, stars_list], open('ras_decs_stars_list.pkl', 'rb'), protocol=-1)
 
 
-def plot_good_guide_catalogs(mag_limit=10.6, min_06=2, min_03=3, min_00=4):
+def calc_good_catalogs(mag_limit=10.6, min_06=2, min_03=3, min_00=4):
     """
-    Plot the status of guide catalogs which meet specific magnitude distribution
-    requirements.  Make a mollweide visualization using healpy.
+    Plot the status of catalogs which meet specific magnitude distribution
+    requirements.
     """
-    plt.close(11)
-
-    good_guide_catalogs = np.zeros(len(stars_list), dtype=int)
+    good_catalogs = np.zeros(len(stars_list), dtype=int)
     for ii, stars in enumerate(stars_list):
         n_06 = np.sum((stars['MAG_ACA'] <= mag_limit - 0.6))
         n_03 = np.sum((stars['MAG_ACA'] <= mag_limit - 0.3))
         n_00 = np.sum((stars['MAG_ACA'] <= mag_limit))
         good = n_06 >= min_06 and n_03 >= min_03 and n_00 >= min_00
-        good_guide_catalogs[ii] = good
+        good_catalogs[ii] = good
 
-    healpy.mollview(good_guide_catalogs, cmap=cm.jet_r, fig=11, min=-1, max=1, cbar=False)
-    return np.sum(good_guide_catalogs) / len(good_guide_catalogs)
+    return np.sum(good_catalogs) / len(good_catalogs), good_catalogs
+
+
+def plot_frac_good_acq_catalogs(min_06=2, min_03=3, min_00=5, frac_goods=None):
+    """
+    Calculate the fraction of sky that has "good" acquisition catalogs for a given mag limit.
+    """
+    mag_limits = np.arange(9.5, 10.65, 0.1)
+    if frac_goods is None:
+        frac_goods = []
+        for mag_limit in mag_limits:
+            print 'Computing for {}'.format(mag_limit)
+            frac_good, good_catalogs = calc_good_catalogs(mag_limit, min_06, min_03, min_00)
+            frac_goods.append(frac_good)
+
+    plt.close(11)
+    plt.figure(11, figsize=(6, 4))
+    plt.plot(mag_limits, frac_goods, '-', lw=2)
+    plt.grid()
+    plt.title('Fraction of sky with good acq catalogs')
+    plt.xlabel('Limiting magnitude')
+    plt.ylabel('Sky fraction')
+    # Plot lines corresponding to 2018 limits for -14C, -11C, and -7C
+    y0, y1 = plt.ylim()
+    plt.plot([10.13, 10.13], [y0, y1], '--r', label='-14 C', lw=2, alpha=0.5)
+    plt.plot([10.02, 10.02], [y0, y1], '--g', label='-11 C', lw=2, alpha=0.5)
+    plt.plot([9.93, 9.93], [y0, y1], '--b', label='-7 C', lw=2, alpha=0.5)
+    plt.ylim(y0, y1)
+    plt.legend(loc='best', fontsize=12)
+
+    plt.tight_layout()
+    plt.savefig('frac_sky_good_acq_{}{}{}.png'.format(min_06, min_03, min_00))
+
+    return frac_goods
 
 
 def plot_series_good_guide_catalogs():
@@ -75,8 +105,10 @@ def plot_series_good_guide_catalogs():
     % convert -delay 100 good_guide_catalogs_*.png  -loop 0 good_guide_catalogs_anim.gif
     """
     for ii, mag_limit in enumerate(np.arange(10.6, 9.5, -0.1)):
+        plt.close(11)
         outfile = 'good_guide_catalogs_{:02d}_{:.1f}.png'.format(ii, mag_limit)
-        frac_good = plot_good_guide_catalogs(mag_limit)
+        frac_good, good_guide_catalogs = calc_good_catalogs(mag_limit)
+        healpy.mollview(good_guide_catalogs, cmap=cm.jet_r, fig=11, min=-1, max=1, cbar=False)
         plt.title('Good catalogs for mag limit {:5.1f} mag ({:6.2f}%)'
                   .format(mag_limit, frac_good * 100.0))
         plt.savefig(outfile)
