@@ -1,11 +1,14 @@
 """Define models to represent the observed ACA CCD dark current distribution.
 Provide a function to degrade the CCD for a delta time."""
+import os
+import re
 
 import numpy as np
 from numpy import exp, log, arange
 
 import Ska.Numpy
 from Chandra.Time import DateTime
+from astropy.io import ascii
 
 # Define a common fixed binning of dark current distribution
 import darkbins
@@ -27,6 +30,32 @@ xbins = darkbins.bins
 xall = darkbins.bin_centers
 imin = 0
 imax = len(xall)
+
+cals = ascii.read('../warm_pix_from_dc/dark_cals_with_temp.txt')
+cals_map = {re.sub(r':', '', cal['day']): cal for cal in cals}
+
+
+def get_dark_map(date, scale_to_m19=True):
+    """
+    Read a dark current map and (by default) scale values to the canonical
+    CCD temperature of -19 C.
+
+    Returns a 1024**2 float array (1-D).
+    """
+    from astropy.io import fits
+    hdus = fits.open(os.path.join('aca_dark_cal', date, 'imd.fits'))
+    dark = hdus[0].data
+    hdus.close()
+
+    if scale_to_m19:
+        # Scale factor to adjust data to an effective temperature of t_ccd_ref.
+        # For t_ccds warmer than t_ccd_ref this scale factor is < 1, i.e. the
+        # observed dark current is made smaller to match what it would be at the
+        # lower reference temperature.
+        scale = 1.0 / temp_scalefac(cals_map[date]['temp'])
+        dark *= scale
+
+    return dark
 
 
 def integrate_from(y, x0, dx=1.0):
@@ -128,6 +157,9 @@ def degrade_ccd(dark, dyear):
     pars = nompars(dyear)
     darkmodel = smooth_twice_broken_pow(pars, xall)
 
+    # Work with a flattened reference (does not copy)
+    dark = dark.ravel()
+
     ndegrade = 800000
     ipix = np.random.randint(0, NPIX, ndegrade)
     dark[ipix] += np.random.poisson(dyear * 0.7, ndegrade)
@@ -139,6 +171,8 @@ def degrade_ccd(dark, dyear):
             logdark = np.random.uniform(log(xbins[i]), log(xbins[i + 1]), n)
             ipix = np.random.randint(0, NPIX, n)
             dark[ipix] += exp(logdark)
+
+    return darkmodel, darkran
 
 
 def temp_scalefac(T_ccd):
