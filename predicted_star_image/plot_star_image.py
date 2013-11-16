@@ -1,34 +1,59 @@
+"""
+Do a by-eye comparison of current limiting mag with 25 year mission values.
+The commands below are the "keepers" where the by-eye signal to noise of the
+star was similar.
+
+>>> draw_star(t_ccd=-15, mag=10.6, year=2014, figure=3, savefig=True)
+
+>>> draw_star(t_ccd=2.5, mag=8.3, year=2024, figure=3, savefig=True)
+>>> draw_star(t_ccd=0, mag=8.5, year=2024, figure=3, savefig=True)
+>>> draw_star(t_ccd=-5, mag=9.0, year=2024, figure=3, savefig=True)
+>>> draw_star(t_ccd=-10, mag=9.4, year=2024, figure=3, savefig=True)
+"""
+
+import sys
+
 import matplotlib.pyplot as plt
 from matplotlib import cm
 from astropy.io import fits
 
-if not 'dark' in globals():
-    dark = fits.open('2013191_dark.fits')[0].data
-    star = fits.open('obs890_adat41.fits')[1].data
+sys.path.insert(0, '../dark_current_model')
+import dark_models
+
+if not 'DARKS' in globals():
+    DARK0 = dark_models.get_dark_map('2013191')
+    STAR = fits.open('obs890_adat41.fits')[1].data
+    DARKS = {}
+    DARKS[2014] = dark_models.degrade_ccd(DARK0, 0.5, inplace=False)
+    for year in range(2015, 1999 + 25 + 1):
+        print "Creating year {} image".format(year)
+        DARKS[year] = dark_models.degrade_ccd(DARKS[year - 1], 1.0, inplace=False)
+
 
 # 237 == 1
 # 279 == 100
 # dt = 42 degC => 10*2 => 21 degC per decade
 
-star_img = star[400]['img_corr'] / 1.7  # e-/sec from a 1.7 sec readout
-dark_img = dark[400:440, 400:440]  # e-/sec from calibration
-dark_t0 = -15.31
-star_mag = 10.3
-
-plt.rc("axes", labelsize=10, titlesize=10)
-plt.rc("xtick", labelsize=10)
-plt.rc("ytick", labelsize=10)
-plt.rc("font", size=10)
+STAR_IMG = STAR[400]['img_corr'] / 1.7  # e-/sec from a 1.7 sec readout
+STAR_MAG = 10.3
+SL = slice(400, 440)
 
 
-def draw_star(t=-16.0, mag=10.3):
-    plt.clf()
-    img = dark_img.copy() * 10 ** ((t - dark_t0) / 21.0)
-    nn = dark_img.shape[0] / 2
-    img[nn - 3:nn + 3, nn - 3:nn + 3] += star_img * 10 ** ((star_mag - mag) * 0.4)
+def draw_star(year=2014, t_ccd=-16.0, mag=10.3, figure=1, savefig=False):
+    year = int(year)
 
-    plt.imshow(img, interpolation='nearest', cmap=cm.gray)
+    plt.close(figure)
+    plt.figure(figure, figsize=(6, 6))
+
+    img = dark_models.temp_scalefac(t_ccd) * DARKS[year][SL, SL]
+    nn = img.shape[0] / 2
+    img[nn - 3:nn + 3, nn - 3:nn + 3] += STAR_IMG * 10 ** ((STAR_MAG - mag) * 0.4)
+
+    plt.imshow(img, interpolation='nearest', cmap=cm.afmhot)
     plt.colorbar()
+    plt.title('Year={} T_ccd={:.1f} Mag={:.1f}'.format(year, t_ccd, mag))
+    if savefig:
+        plt.savefig('star_{}_t{:.1f}_mag{:.1f}.png'.format(year, t_ccd, mag))
 
 
 def draw_star_dark_range():

@@ -31,7 +31,9 @@ xall = darkbins.bin_centers
 imin = 0
 imax = len(xall)
 
-cals = ascii.read('../warm_pix_from_dc/dark_cals_with_temp.txt')
+basedir = os.path.dirname(__file__)
+
+cals = ascii.read(os.path.join(basedir, '../warm_pix_from_dc/dark_cals_with_temp.txt'))
 cals_map = {re.sub(r':', '', cal['day']): cal for cal in cals}
 
 
@@ -43,7 +45,7 @@ def get_dark_map(date, scale_to_m19=True):
     Returns a 1024**2 float array (1-D).
     """
     from astropy.io import fits
-    hdus = fits.open(os.path.join('aca_dark_cal', date, 'imd.fits'))
+    hdus = fits.open(os.path.join(basedir, 'aca_dark_cal', date, 'imd.fits'))
     dark = hdus[0].data
     hdus.close()
 
@@ -151,11 +153,15 @@ def nompars(dyear):
     return (gamma1, gamma2, x_b, x_r, ampl1)
 
 
-def degrade_ccd(dark, dyear):
+def degrade_ccd(dark, dyear, inplace=True):
     """Degrade CCD (dark current map) for dyear years.  The input 'dark' map is
-    updated in place."""
+    updated in place if inplace is True."""
     pars = nompars(dyear)
     darkmodel = smooth_twice_broken_pow(pars, xall)
+
+    if not inplace:
+        dark_shape = dark.shape
+        dark = dark.copy()
 
     # Work with a flattened reference (does not copy)
     dark = dark.ravel()
@@ -172,7 +178,8 @@ def degrade_ccd(dark, dyear):
             ipix = np.random.randint(0, NPIX, n)
             dark[ipix] += exp(logdark)
 
-    return darkmodel, darkran
+    if not inplace:
+        return dark.reshape(dark_shape)
 
 
 def temp_scalefac(T_ccd):
