@@ -84,11 +84,13 @@ def calc_good_catalogs(mag_limit=10.6, min_06=2, min_03=3, min_00=4):
 
 
 def plot_frac_good_catalogs(min_06s=[1, 1], min_03s=[2, 3], min_00s=[4, 5],
-                            frac_goods=None, mag_cases=(10.13, 10.02, 9.93)):
+                            frac_goods=None, mag_cases=(10.13, 10.02, 9.93),
+                            min_mag=9.5, max_mag=10.65, d_mag=0.1,
+                            labels=['14 C', '-11 C', '-7 C']):
     """
     Plot the fraction of sky that has "good" catalogs for a given mag limit.
     """
-    mag_limits = np.arange(9.5, 10.65, 0.1)
+    mag_limits = np.arange(min_mag, max_mag, d_mag)
     if frac_goods is None:
         frac_goods = {}
         for min_06, min_03, min_00 in zip(min_06s, min_03s, min_00s):
@@ -110,13 +112,23 @@ def plot_frac_good_catalogs(min_06s=[1, 1], min_03s=[2, 3], min_00s=[4, 5],
     # Plot lines corresponding to 2018 limits for -14C, -11C, and -7C
     y0, y1 = plt.ylim()
     mc = mag_cases
-    plt.plot([mc[0], mc[0]], [y0, y1], '--r', label='-14 C', lw=2, alpha=0.5)
-    plt.plot([mc[1], mc[1]], [y0, y1], '--g', label='-11 C', lw=2, alpha=0.5)
-    plt.plot([mc[2], mc[2]], [y0, y1], '--b', label='-7 C', lw=2, alpha=0.5)
+    plt.plot([mc[0], mc[0]], [y0, y1], '--r', label=labels[0], lw=2, alpha=0.5)
+    plt.plot([mc[1], mc[1]], [y0, y1], '--g', label=labels[1], lw=2, alpha=0.5)
+    plt.plot([mc[2], mc[2]], [y0, y1], '--b', label=labels[2], lw=2, alpha=0.5)
     plt.ylim(y0, y1)
     plt.legend(loc='best', fontsize=12)
 
     return frac_goods
+
+
+def plot_guide_25yrs_catalogs(min_06s=[1, 1], min_03s=[2, 2], min_00s=[3, 4],
+                              mag_cases=(9.4, 9.0, 8.5)):
+    plot_frac_good_catalogs(min_06s, min_03s, min_00s, mag_cases=mag_cases,
+                            min_mag=8.0, max_mag=10.65, d_mag=0.2,
+                            labels=['-10 C', '-5 C', '0 C'])
+    plt.title('Fraction of sky with good catalogs at 25 years')
+    plt.tight_layout()
+    plt.savefig('frac_sky_good_25yrs.png')
 
 
 def plot_frac_good_acq_catalogs(min_06s=[2, 2], min_03s=[3, 3], min_00s=[4, 5],
