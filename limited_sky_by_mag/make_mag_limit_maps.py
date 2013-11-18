@@ -127,6 +127,9 @@ def plot_guide_25yrs_catalogs(min_06s=[1, 1], min_03s=[2, 2], min_00s=[3, 4],
                             min_mag=8.0, max_mag=10.65, d_mag=0.2,
                             labels=['-10 C', '-5 C', '0 C'])
     plt.title('Fraction of sky with good catalogs at 25 years')
+    ax = plt.gca()
+    ax.lines[1].set_color('b')  # Good guide catalogs "higher risk" case (blue)
+    ax.lines[0].set_color('m')  # Even higher risk, magenta
     plt.tight_layout()
     plt.savefig('frac_sky_good_25yrs.png')
 
