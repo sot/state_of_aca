@@ -1,0 +1,42 @@
+Fit offset and scale of warm pixel fraction vs acq and guide stats
+
+Processing
+----------
+
+Run
+
+make_warm_pix_estimation_table.py
+make_acq_table_with_warm_pix.py
+make_gui_table_with_warm_pix.py
+acq_warm_fit.py
+acq_warm_fit_unequal.py
+gui_warm_fit.py
+gui_warm_fit_unequal.py
+
+
+Scripts
+-------
+
+make_warm_pix_estimation_table.py - make some pickle and numpy-save tables to speed up 
+calculating and estimated warm pixel count for a given time and temperature
+
+warm_pix.py - include utility to estimate warm pixels count for a given time, temperature, and 
+warm pixel threshold
+
+make_acq_table_with_warm_pix.py - grab acq stats from database and add temperature and warm pix 
+estimate, save to a numpy save file
+
+make_gui_table_with_warm_pix.py - grab guide stats from database and add temperature and warm 
+pix estimate, save to a numpy save file
+
+acq_warm_fit.py - fit scale and offset of warm pixels to acq failures in mag bins
+
+acq_warm_fit_unequal.py - fit scale and offset of warm pixels to acq failures in mag bins 
+(spaced to try to sample more where the curve was changing the most)
+
+gui_warm_fit.py - fit scale and offset of warm pixels to guide bad trak in mag bins
+
+gui_warm_fit_unequal.py - fit scale and offset of warm pixels to guide bad trak in mag bins 
+(spaced to try to sample more where the curve was changing the most)
+
+

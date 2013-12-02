@@ -1,0 +1,55 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<html>
+  <head>
+    <title>Guide Stats Summaries</title>
+    <link href="/mta/ASPECT/aspect.css" rel="stylesheet" type="text/css" media="all" />
+  </head>
+
+  <body>
+<!--#include virtual="/mta/ASPECT/header.html"-->
+
+<H1>Summary of Guide Star Statistics</H1>
+
+<TABLE>
+{% for mag in ['08.00', '08.50', '09.00', '09.25', '09.50', '09.75', '10.00', '10.30', '10.60'] %}
+<TR>
+<TD><PRE>
+{{ fit_info['month'][mag]['bad_trak'][100]['fit'] }}
+{{ fit_info['month'][mag]['bad_trak'][100]['conf'] }}
+</PRE></TD></TR>
+<TR><TD><IMG SRC="summary_month_bad_trak_{{ mag }}_100_wp.png"></TD></TR>
+{% endfor %}
+</TABLE>
+
+
+<TABLE>
+
+{% for mag in ['08.00', '08.50', '09.00', '09.25', '09.50', '09.75', '10.00', '10.30', '10.60'] %}
+<TR>
+<TD><PRE>
+{{ fit_info['quarter'][mag]['bad_trak'][100]['fit'] }}
+{{ fit_info['quarter'][mag]['bad_trak'][100]['conf'] }}
+</PRE></TD></TR>
+<TR><TD><IMG SRC="summary_quarter_bad_trak_{{ mag }}_100_wp.png"></TD></TR>
+{% endfor %}
+</TABLE>
+
+{% for mag in ['08.00', '08.50', '09.00', '09.25', '09.50', '09.75', '10.00', '10.30', '10.60'] %}
+<TR>
+<TD><PRE>
+{{ fit_info['semi'][mag]['bad_trak'][100]['fit'] }}
+{{ fit_info['semi'][mag]['bad_trak'][100]['conf'] }}
+</PRE></TD></TR>
+<TR><TD><IMG SRC="summary_semi_bad_trak_{{ mag }}_100_wp.png"></TD></TR>
+{% endfor %}
+</TABLE>
+
+
+    
+<!--#include virtual="/mta/ASPECT/footer.html"--> 
+<!--footer end-->
+
+  </body>
+</html>
+
+
