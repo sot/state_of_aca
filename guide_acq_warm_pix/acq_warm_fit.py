@@ -1,4 +1,10 @@
 #!/usr/bin/env python
+"""
+NOTE: this script is mostly deprecated in favor of using the fit_sota_model
+IPython notebook (which does a simultaneous fit of unbinned data) in the
+aca_stats project.
+"""
+
 from __future__ import division
 
 import os
