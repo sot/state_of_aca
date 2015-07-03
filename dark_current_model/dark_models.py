@@ -236,7 +236,7 @@ def get_sbp_pars(dates):
 
 def get_darkhist(date='2013:001', T_ccd=-19.0):
     """
-    Get dark current histogram at the given ``date`` and ``T_ccd``.
+    Get model dark current histogram at the given ``date`` and ``T_ccd``.
 
     Returns bins, darkhist
     """
