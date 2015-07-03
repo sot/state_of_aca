@@ -1,0 +1,12 @@
+Getting 2015 version of state of the ACA analysis code into shape and updated
+=============================================================================
+
+- Re-ran process described in dark_current_model/NOTES
+
+- Re-ran guide_acq_warm_pix/acq_warm_fit.py (along with previous dependent scripts).
+  Most of the work in this directory is superceded by products in mica
+  and the fit_sota_model IPython notebook in the aca_stats project.
+
+- Used plot_predicted_warmpix.plot_warm_frac() to verify that the 2013 dark
+  current model coefficients are still valid up through 2015:090 cal.
+
